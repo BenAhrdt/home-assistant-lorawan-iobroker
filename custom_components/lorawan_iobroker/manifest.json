@@ -1,0 +1,12 @@
+{
+  "domain": "lorawan_iobroker",
+  "name": "ioBroker LoRaWAN Bridge",
+  "codeowners": ["@BenAhrdt"],
+  "config_flow": true,
+  "dependencies": ["frontend", "mqtt"],
+  "documentation": "https://github.com/BenAhrdt/home-assistant-lorawan-iobroker",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/BenAhrdt/home-assistant-lorawan-iobroker/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

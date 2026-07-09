@@ -1,0 +1,45 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ioBroker LoRaWAN source",
+        "description": "Add one ioBroker LoRaWAN source. The integration uses existing Home Assistant MQTT devices and entities.",
+        "data": {
+          "name": "Name",
+          "source_device_id": "LoRaWAN device",
+          "source": "Source",
+          "label": "Home Assistant label for discovered entities"
+        }
+      }
+    },
+    "error": {
+      "no_source_device": "Select a valid lorawan.x MQTT device.",
+      "source_already_configured": "This LoRaWAN source is already configured by another entry."
+    },
+    "abort": {
+      "already_configured": "This source is already configured."
+    }
+  },
+  "options": {
+    "error": {
+      "no_source_device": "Select a valid lorawan.x MQTT device.",
+      "source_already_configured": "This LoRaWAN source is already configured by another entry."
+    },
+    "step": {
+      "init": {
+        "title": "ioBroker LoRaWAN options",
+        "description": "Configure the selected ioBroker LoRaWAN source.",
+        "data": {
+          "name": "Name",
+          "source_device_id": "LoRaWAN device",
+          "label": "Home Assistant label for discovered entities",
+          "periodic_interval_minutes": "Periodic discovery interval"
+        },
+        "data_description": {
+          "label": "Existing labels can be selected, new label names can be entered and will be created automatically.",
+          "periodic_interval_minutes": "Minutes between periodic discovery messages for entities with the configured label."
+        }
+      }
+    }
+  }
+}
