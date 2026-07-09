@@ -27,6 +27,8 @@ from .const import (
 )
 from .registry import (
     SourceConfig,
+    _device_connections,
+    _device_identifiers,
     _entry_labels,
     _is_mqtt_device,
     _label_names,
@@ -272,10 +274,8 @@ def _notification_device_tokens(device: dr.DeviceEntry) -> list[str]:
         device.sw_version,
         device.hw_version,
     ]
-    for domain, identifier in device.identifiers:
-        tokens.extend((domain, str(identifier), f"{domain}:{identifier}"))
-    for connection_type, value in device.connections:
-        tokens.extend((connection_type, str(value), f"{connection_type}:{value}"))
+    tokens.extend(_device_identifiers(device))
+    tokens.extend(_device_connections(device))
     return [str(token) for token in tokens if token]
 
 
@@ -357,9 +357,12 @@ async def _publish_device_ids(hass: HomeAssistant, source: SourceConfig) -> None
     device_registry = dr.async_get(hass)
     devices: dict[str, dict[str, str]] = {}
     for device in device_registry.devices.values():
-        for domain, identifier in device.identifiers:
+        for identifier_parts in device.identifiers:
+            if len(identifier_parts) < 2:
+                continue
+            domain, *identifier = identifier_parts
             if domain == "mqtt":
-                devices[str(identifier)] = {"deviceId": device.id}
+                devices[":".join(str(part) for part in identifier)] = {"deviceId": device.id}
 
     await mqtt.async_publish(
         hass,

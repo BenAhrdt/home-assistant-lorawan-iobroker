@@ -19,7 +19,7 @@ from .const import (
     DEFAULT_SOURCE,
     DOMAIN,
 )
-from .registry import normalize
+from .registry import _device_identifiers, normalize
 
 
 class LoRaWANIobrokerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -277,7 +277,7 @@ def _source_from_device(device: dr.DeviceEntry) -> str | None:
     values = [
         device.name,
         device.name_by_user,
-        *[str(identifier) for _, identifier in device.identifiers],
+        *_device_identifiers(device),
     ]
     for value in values:
         if not value:

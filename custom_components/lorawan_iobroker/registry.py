@@ -105,19 +105,32 @@ def _json_safe(value: Any) -> Any:
     return str(value)
 
 
+def _registry_item_values(item: tuple[Any, ...]) -> list[str]:
+    parts = [str(part) for part in item if part is not None]
+    if not parts:
+        return []
+    if len(parts) == 1:
+        return parts
+
+    domain = parts[0]
+    identifier = ":".join(parts[1:])
+    values = [f"{domain}:{identifier}", identifier]
+    if len(parts) > 2:
+        values.append(parts[-1])
+    return values
+
+
 def _device_identifiers(device: dr.DeviceEntry) -> list[str]:
     values: list[str] = []
-    for domain, identifier in device.identifiers:
-        values.append(f"{domain}:{identifier}")
-        values.append(str(identifier))
+    for identifier in device.identifiers:
+        values.extend(_registry_item_values(identifier))
     return values
 
 
 def _device_connections(device: dr.DeviceEntry) -> list[str]:
     values: list[str] = []
-    for connection_type, value in device.connections:
-        values.append(f"{connection_type}:{value}")
-        values.append(str(value))
+    for connection in device.connections:
+        values.extend(_registry_item_values(connection))
     return values
 
 
