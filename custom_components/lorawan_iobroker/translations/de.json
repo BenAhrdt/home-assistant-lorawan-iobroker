@@ -1,0 +1,45 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ioBroker-LoRaWAN-Quelle",
+        "description": "Füge eine ioBroker-LoRaWAN-Quelle hinzu. Die Integration verwendet vorhandene MQTT-Geräte und -Entitäten aus Home Assistant.",
+        "data": {
+          "name": "Name",
+          "source_device_id": "LoRaWAN-Gerät",
+          "source": "Quelle",
+          "label": "Home-Assistant-Label für gefundene Entitäten"
+        }
+      }
+    },
+    "error": {
+      "no_source_device": "Wähle ein gültiges lorawan.x-MQTT-Gerät aus.",
+      "source_already_configured": "Diese LoRaWAN-Quelle wird bereits von einem anderen Eintrag verwendet."
+    },
+    "abort": {
+      "already_configured": "Diese Quelle ist bereits konfiguriert."
+    }
+  },
+  "options": {
+    "error": {
+      "no_source_device": "Wähle ein gültiges lorawan.x-MQTT-Gerät aus.",
+      "source_already_configured": "Diese LoRaWAN-Quelle wird bereits von einem anderen Eintrag verwendet."
+    },
+    "step": {
+      "init": {
+        "title": "ioBroker-LoRaWAN-Optionen",
+        "description": "Konfiguriere die ausgewählte ioBroker-LoRaWAN-Quelle.",
+        "data": {
+          "name": "Name",
+          "source_device_id": "LoRaWAN-Gerät",
+          "label": "Home-Assistant-Label für gefundene Entitäten",
+          "periodic_interval_minutes": "Intervall für die regelmäßige Erkennung"
+        },
+        "data_description": {
+          "label": "Vorhandene Labels können ausgewählt werden. Neue Labelnamen können eingegeben werden und werden automatisch angelegt.",
+          "periodic_interval_minutes": "Minuten zwischen regelmäßigen Erkennungsnachrichten für Entitäten mit dem konfigurierten Label."
+        }
+      }
+    }
+  }
+}
