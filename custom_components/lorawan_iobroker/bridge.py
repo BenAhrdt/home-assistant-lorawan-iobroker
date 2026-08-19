@@ -79,7 +79,7 @@ def source_from_entry(entry: ConfigEntry) -> SourceConfig:
 async def async_setup_bridge(hass: HomeAssistant, entry: ConfigEntry) -> list[Any]:
     source = source_from_entry(entry)
     unloaders: list[Any] = []
-    LOGGER.warning(
+    LOGGER.info(
         "Starting ioBroker LoRaWAN bridge for %s: publish=%s subscribe=%s label=%s",
         source.source,
         data_to_iob_topic(source),
@@ -119,7 +119,7 @@ async def async_setup_bridge(hass: HomeAssistant, entry: ConfigEntry) -> list[An
 
     await _publish_device_ids(hass, source)
     await _publish_all_labeled(hass, source)
-    LOGGER.warning("ioBroker LoRaWAN bridge started for %s", source.source)
+    LOGGER.info("ioBroker LoRaWAN bridge started for %s", source.source)
     return unloaders
 
 
@@ -132,7 +132,7 @@ async def _attach_notification_device_trigger(hass: HomeAssistant, source: Sourc
 
     for device in source_devices:
         triggers = await mqtt_device_trigger.async_get_triggers(hass, device.id)
-        LOGGER.warning(
+        LOGGER.debug(
             "MQTT notification candidate for %s: device=%s name=%s score=%s triggers=%s",
             source.source,
             device.id,
@@ -291,7 +291,7 @@ async def _initialize_notification_trigger(
         "type": "notification",
         "subtype": "general",
     }
-    LOGGER.warning(
+    LOGGER.debug(
         "Initializing HA automation-style MQTT device notification trigger for %s on device %s",
         source.source,
         device_id,
@@ -306,7 +306,7 @@ async def _initialize_notification_trigger(
         action,
         "lorawan_iobroker",
         f"{source.source} notification",
-        LOGGER.warning,
+        LOGGER.debug,
     )
     if hasattr(unsubscribe, "__await__"):
         unsubscribe = await unsubscribe
@@ -317,7 +317,7 @@ def _handle_notification_trigger(hass: HomeAssistant, source: SourceConfig, vari
     trigger = variables.get("trigger", {})
     payload = trigger.get("payload", "")
 
-    LOGGER.warning("Received ioBroker LoRaWAN notification for %s: %s", source.source, payload)
+    LOGGER.debug("Received ioBroker LoRaWAN notification for %s: %s", source.source, payload)
     persistent_notification.async_create(
         hass,
         str(payload),
@@ -371,7 +371,7 @@ async def _publish_device_ids(hass: HomeAssistant, source: SourceConfig) -> None
         qos=0,
         retain=False,
     )
-    LOGGER.warning("Published %s MQTT device ids to %s", len(devices), data_to_iob_topic(source))
+    LOGGER.debug("Published %s MQTT device ids to %s", len(devices), data_to_iob_topic(source))
 
 
 async def _publish_all_labeled(hass: HomeAssistant, source: SourceConfig) -> None:
@@ -405,7 +405,7 @@ async def _publish_entities(hass: HomeAssistant, source: SourceConfig, entity_id
         qos=0,
         retain=False,
     )
-    LOGGER.warning(
+    LOGGER.debug(
         "Published %s entities to %s discovery=%s",
         len(entities),
         data_to_iob_topic(source),
@@ -470,7 +470,7 @@ def _capabilities(domain: str, state: State) -> dict[str, Any]:
 
 
 def _handle_command(hass: HomeAssistant, source: SourceConfig, payload: str) -> None:
-    LOGGER.warning("Received ioBroker LoRaWAN command on %s: %s", data_from_iob_topic(source), payload)
+    LOGGER.debug("Received ioBroker LoRaWAN command on %s: %s", data_from_iob_topic(source), payload)
     try:
         data = json.loads(payload)
     except (TypeError, ValueError) as err:
@@ -583,7 +583,7 @@ async def _handle_simple_command(hass: HomeAssistant, source: SourceConfig, enti
 
 
 async def _call_service(hass: HomeAssistant, domain: str, service: str, data: dict[str, Any]) -> None:
-    LOGGER.warning("Calling HA service %s.%s with %s", domain, service, data)
+    LOGGER.debug("Calling HA service %s.%s with %s", domain, service, data)
     await hass.services.async_call(domain, service, data, blocking=False)
 
 

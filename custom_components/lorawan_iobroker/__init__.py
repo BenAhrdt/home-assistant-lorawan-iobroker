@@ -81,4 +81,4 @@ async def _async_register_once(hass: HomeAssistant) -> None:
         if "Overwriting panel" not in str(err):
             hass.data[DOMAIN].pop(_REGISTERED, None)
             raise
-        LOGGER.warning("Sidebar panel %s already exists, reusing it", PANEL_URL)
+        LOGGER.debug("Sidebar panel %s already exists, reusing it", PANEL_URL)

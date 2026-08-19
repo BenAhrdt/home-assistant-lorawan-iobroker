@@ -86,6 +86,10 @@ Please report reproducible problems in the [GitHub issue tracker](https://github
 - Message exchange with ioBroker depends on separately configured automations.
 - Source discovery expects the `LoRaWAN.<number>` naming scheme.
 
+## Changelog
+
+Release notes and the complete change history are available in the [changelog](CHANGELOG.md).
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
