@@ -24,6 +24,10 @@ from .const import (
     CONF_SOURCE_DEVICE_ID,
     DEFAULT_LABEL,
     DEFAULT_PERIODIC_INTERVAL_MINUTES,
+    DEVICELESS_DEVICE_ID,
+    DEVICELESS_DEVICE_MANUFACTURER,
+    DEVICELESS_DEVICE_MODEL,
+    DEVICELESS_DEVICE_NAME,
 )
 from .registry import (
     SourceConfig,
@@ -419,6 +423,21 @@ def _entity_payload(hass: HomeAssistant, state: State) -> dict[str, Any]:
     entity = entity_registry.async_get(state.entity_id)
     device = device_registry.async_get(entity.device_id) if entity and entity.device_id else None
     domain = state.entity_id.split(".", 1)[0]
+    device_payload = (
+        {
+            "id": device.id,
+            "name": device.name_by_user or device.name,
+            "manufacturer": device.manufacturer,
+            "model": device.model,
+        }
+        if device
+        else {
+            "id": DEVICELESS_DEVICE_ID,
+            "name": DEVICELESS_DEVICE_NAME,
+            "manufacturer": DEVICELESS_DEVICE_MANUFACTURER,
+            "model": DEVICELESS_DEVICE_MODEL,
+        }
+    )
 
     return {
         "entity_id": state.entity_id,
@@ -438,12 +457,7 @@ def _entity_payload(hass: HomeAssistant, state: State) -> dict[str, Any]:
             if key not in EXCLUDED_ATTRIBUTES
         },
         "capabilities": _capabilities(domain, state),
-        "device": {
-            "id": device.id if device else None,
-            "name": (device.name_by_user or device.name) if device else "unknown",
-            "manufacturer": device.manufacturer if device else "unknown",
-            "model": device.model if device else "unknown",
-        },
+        "device": device_payload,
     }
 
 

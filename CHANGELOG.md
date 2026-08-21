@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.1.4] - 2026-08-21
+
+### Fixed
+
+- Added a stable synthetic Home Assistant device for helpers and other entities without a device association, allowing ioBroker to consume their complete entity payloads.
+
 ## [0.1.3] - 2026-08-19
 
 ### Changed
@@ -33,6 +39,7 @@ All notable changes to this project are documented in this file.
 
 - Initial release of the ioBroker LoRaWAN Bridge integration for Home Assistant.
 
+[0.1.4]: https://github.com/BenAhrdt/home-assistant-lorawan-iobroker/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/BenAhrdt/home-assistant-lorawan-iobroker/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/BenAhrdt/home-assistant-lorawan-iobroker/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/BenAhrdt/home-assistant-lorawan-iobroker/compare/v0.1.0...v0.1.1

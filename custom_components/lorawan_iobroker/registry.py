@@ -292,6 +292,6 @@ def integration_payload(hass: HomeAssistant) -> dict[str, Any]:
         )
 
     return {
-        "version": "0.1.3",
+        "version": "0.1.4",
         "sources": sources_payload,
     }
