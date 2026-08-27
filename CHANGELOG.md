@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.2.0] - 2026-08-27
+
+### Added
+
+- Added a data-flow view to the sidebar panel that visualizes imports from ioBroker through MQTT into Home Assistant and label-based exports back to ioBroker.
+- Grouped exported devices by their originating Home Assistant integration, including integration brand icons and direct links to device pages.
+- Added source and label match metadata to distinguish imported devices, exported devices, and devices participating in both directions.
+- Added warnings and direct device links for potential feedback loops where an imported device also carries the configured export label.
+
+### Changed
+
+- Improved source matching by considering the configured source device and its direct downstream devices.
+- Added a Devices/Data Flow view switch while retaining source, search, and integration filters.
+
 ## [0.1.4] - 2026-08-21
 
 ### Fixed
@@ -39,6 +53,7 @@ All notable changes to this project are documented in this file.
 
 - Initial release of the ioBroker LoRaWAN Bridge integration for Home Assistant.
 
+[0.2.0]: https://github.com/BenAhrdt/home-assistant-lorawan-iobroker/compare/v0.1.4...v0.2.0
 [0.1.4]: https://github.com/BenAhrdt/home-assistant-lorawan-iobroker/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/BenAhrdt/home-assistant-lorawan-iobroker/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/BenAhrdt/home-assistant-lorawan-iobroker/compare/v0.1.1...v0.1.2

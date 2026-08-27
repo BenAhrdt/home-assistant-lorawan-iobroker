@@ -180,6 +180,11 @@ def _matches_source(
     device: dr.DeviceEntry,
     device_registry: dr.DeviceRegistry,
 ) -> bool:
+    if source.source_device_id and (
+        device.id == source.source_device_id
+        or device.via_device_id == source.source_device_id
+    ):
+        return True
     if _device_matches_source_name(source.source, device):
         return True
     return _via_device_matches_source(source, device, device_registry)
@@ -194,6 +199,23 @@ def _matches_label(hass: HomeAssistant, source: SourceConfig, device: dr.DeviceE
         for label in _label_names(hass, _entry_labels(entity))
     }
     return target in device_labels or target in entity_labels
+
+
+def _label_match_details(
+    hass: HomeAssistant,
+    source: SourceConfig,
+    device: dr.DeviceEntry,
+    entities: list[er.RegistryEntry],
+) -> tuple[bool, list[str]]:
+    """Return whether the configured export label is present and where it is set."""
+    target = source.label.lower()
+    device_labels = {label.lower() for label in _label_names(hass, _entry_labels(device))}
+    labeled_entities = [
+        entity.entity_id
+        for entity in entities
+        if target in {label.lower() for label in _label_names(hass, _entry_labels(entity))}
+    ]
+    return target in device_labels or bool(labeled_entities), labeled_entities
 
 
 def _entity_payload(hass: HomeAssistant, entity: er.RegistryEntry) -> dict[str, Any]:
@@ -236,6 +258,9 @@ def _device_payload(
 ) -> dict[str, Any]:
     entity_payloads = [_entity_payload(hass, entity) for entity in entities]
     domains = sorted({entity["domain"] for entity in entity_payloads})
+    source_match = _matches_source(source, device, dr.async_get(hass))
+    label_match, labeled_entities = _label_match_details(hass, source, device, entities)
+    device_labels = {label.lower() for label in _label_names(hass, _entry_labels(device))}
     return {
         "id": device.id,
         "name": device.name_by_user or device.name or "Unnamed device",
@@ -249,6 +274,12 @@ def _device_payload(
         "connections": sorted(_device_connections(device)),
         "integrations": _device_integrations(hass, device),
         "source": source.source,
+        "source_match": source_match,
+        "label_match": label_match,
+        "label_on_device": source.label.lower() in device_labels,
+        "labeled_entity_count": len(labeled_entities),
+        "labeled_entities": sorted(labeled_entities),
+        "flow": "both" if source_match and label_match else "inbound" if source_match else "outbound",
         "mqtt": _is_mqtt_device(hass, device),
         "entity_count": len(entity_payloads),
         "domains": domains,
@@ -292,6 +323,6 @@ def integration_payload(hass: HomeAssistant) -> dict[str, Any]:
         )
 
     return {
-        "version": "0.1.4",
+        "version": "0.2.0",
         "sources": sources_payload,
     }
