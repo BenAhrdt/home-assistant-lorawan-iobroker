@@ -51,6 +51,14 @@ EXCLUDED_ATTRIBUTES = {
     "unit_of_measurement",
 }
 
+# Service parameters only; MQTT commands must never supply target selectors.
+LIGHT_PARAMETERS = frozenset({
+    "brightness", "brightness_pct", "brightness_step", "brightness_step_pct",
+    "color_temp", "color_temp_kelvin", "kelvin", "rgb_color", "rgbw_color",
+    "rgbww_color", "hs_color", "xy_color", "color_name", "white", "effect",
+    "flash", "transition",
+})
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -538,7 +546,7 @@ async def _handle_attribute_command(hass: HomeAssistant, source: SourceConfig, p
         await _call_service(hass, domain, "set_humidity", {ATTR_ENTITY_ID: entity_id, "humidity": int(value)})
     elif domain == "humidifier" and attribute == "mode":
         await _call_service(hass, domain, "set_mode", {ATTR_ENTITY_ID: entity_id, "mode": value})
-    elif domain == "light" and attribute:
+    elif domain == "light" and isinstance(attribute, str) and attribute in LIGHT_PARAMETERS:
         cast_value = int(value) if attribute in ("brightness", "transition") else value
         await _call_service(hass, domain, "turn_on", {ATTR_ENTITY_ID: entity_id, attribute: cast_value})
     elif domain == "cover" and attribute == "command":

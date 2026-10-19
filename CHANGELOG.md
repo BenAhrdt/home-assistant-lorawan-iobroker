@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.2.1] - 2026-10-19
+
+### Security
+
+- Removed the unused HTTP control endpoint that allowed target selectors to override the validated entity.
+- Restricted MQTT light attributes to an explicit allow-list of service parameters.
+- Required administrator access for the sidebar panel and the data, options, and publish APIs.
+
+### Changed
+
+- Immediately display the last panel data when returning within the same authenticated connection, preserving source, search, integration filter, and view while refreshing in the background.
+- Keep existing devices visible during refresh, report loading failures, and avoid showing an empty-source message before data arrives.
+- Index registry entities once per data request instead of repeatedly scanning them for each device and source.
+
 ## [0.2.0] - 2026-08-27
 
 ### Added

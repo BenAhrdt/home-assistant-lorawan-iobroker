@@ -292,11 +292,16 @@ def integration_payload(hass: HomeAssistant) -> dict[str, Any]:
     entity_registry = er.async_get(hass)
     configs = source_configs(hass)
     sources_payload = []
+    # Index once instead of scanning all entities for every device and source.
+    entities_by_device: dict[str, list[er.RegistryEntry]] = {}
+    for entity in entity_registry.entities.values():
+        if entity.device_id is not None:
+            entities_by_device.setdefault(entity.device_id, []).append(entity)
 
     for source in configs:
         devices = []
         for device in device_registry.devices.values():
-            entities = list(er.async_entries_for_device(entity_registry, device.id))
+            entities = entities_by_device.get(device.id, [])
             if not entities:
                 continue
             if not (
@@ -323,6 +328,6 @@ def integration_payload(hass: HomeAssistant) -> dict[str, Any]:
         )
 
     return {
-        "version": "0.2.0",
+        "version": "0.2.1",
         "sources": sources_payload,
     }

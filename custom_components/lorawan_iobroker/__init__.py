@@ -10,7 +10,6 @@ from homeassistant.core import HomeAssistant
 from .const import DOMAIN, NAME, PANEL_JS_URL, PANEL_URL
 from .bridge import async_setup_bridge
 from .http import (
-    LoRaWANControlView,
     LoRaWANDataView,
     LoRaWANOptionsView,
     LoRaWANPanelJsView,
@@ -56,7 +55,6 @@ async def _async_register_once(hass: HomeAssistant) -> None:
 
     hass.http.register_view(LoRaWANPanelJsView(panel_js))
     hass.http.register_view(LoRaWANDataView())
-    hass.http.register_view(LoRaWANControlView())
     hass.http.register_view(LoRaWANOptionsView())
     hass.http.register_view(LoRaWANPublishView())
 
@@ -75,7 +73,7 @@ async def _async_register_once(hass: HomeAssistant) -> None:
                     "trust_external": False,
                 }
             },
-            require_admin=False,
+            require_admin=True,
         )
     except ValueError as err:
         if "Overwriting panel" not in str(err):

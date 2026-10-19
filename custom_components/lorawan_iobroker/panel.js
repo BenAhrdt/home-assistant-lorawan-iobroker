@@ -1,5 +1,8 @@
 const SELECTED_SOURCE_STORAGE_KEY = "lorawan_iobroker_selected_source";
 
+// Keep data in memory for this authenticated connection, never in browser storage.
+const panelSessions = new WeakMap();
+
 class LoRaWANIobrokerPanel extends HTMLElement {
   constructor() {
     super();
@@ -15,23 +18,43 @@ class LoRaWANIobrokerPanel extends HTMLElement {
   }
 
   set hass(hass) {
+    const changed = this._connection !== hass.connection || this._userId !== hass.user?.id;
     this._hass = hass;
-    if (!this.data && !this._loadingPromise) {
+    if (changed) {
+      this._connection = hass.connection;
+      this._userId = hass.user?.id;
+      let session = panelSessions.get(this._connection);
+      if (!session || session.userId !== this._userId) {
+        session = { userId: this._userId, data: null, view: "devices", search: "", integration: "" };
+        panelSessions.set(this._connection, session);
+      }
+      this._session = session;
+      this.data = session.data;
+      this.view = session.view;
+      this.search = session.search;
+      this.integration = session.integration;
+      this.selectedSource = session.selectedSource || loadSelectedSource();
       this.refresh();
     }
   }
 
   connectedCallback() {
     this.render();
+    if (this._hass) this.refresh();
   }
 
   async refresh() {
-    if (!this._hass) return;
+    if (!this._hass || this._loadingPromise) return;
+    const session = this._session;
     this.loading = true;
+    this.error = "";
     this.render();
-    this._loadingPromise = this._hass.callApi("GET", "lorawan_iobroker/data");
     try {
-      this.data = await this._loadingPromise;
+      const pending = this._hass.callApi("GET", "lorawan_iobroker/data");
+      this._loadingPromise = pending;
+      const data = await pending;
+      if (session !== this._session) return;
+      this.data = data;
       if (
         this.data.sources.length &&
         !this.data.sources.some((source) => source.entry_id === this.selectedSource)
@@ -41,10 +64,21 @@ class LoRaWANIobrokerPanel extends HTMLElement {
       } else if (!this.data.sources.length) {
         this.selectedSource = "";
       }
+    } catch (err) {
+      if (session !== this._session) return;
+      if (err.status_code === 401 || err.status_code === 403) {
+        this.data = null;
+        session.data = null;
+      }
+      this.error = "Gerätedaten konnten nicht geladen werden. Bitte erneut aktualisieren.";
     } finally {
-      this.loading = false;
       this._loadingPromise = null;
-      this.render();
+      if (session === this._session) {
+        this.loading = false;
+        this.render();
+      } else {
+        this.refresh();
+      }
     }
   }
 
@@ -223,6 +257,12 @@ class LoRaWANIobrokerPanel extends HTMLElement {
 
   render() {
     if (!this.shadowRoot) return;
+    if (this._session) {
+      Object.assign(this._session, {
+        data: this.data, selectedSource: this.selectedSource,
+        view: this.view, search: this.search, integration: this.integration,
+      });
+    }
     const source = this.source();
     const devices = this.devices();
     const integrations = this.integrations();
@@ -233,14 +273,14 @@ class LoRaWANIobrokerPanel extends HTMLElement {
         <header>
           <div>
             <h1>ioBroker LoRaWAN</h1>
-            <p>${source ? escapeHtml(source.source) : "Keine Quelle eingerichtet"}</p>
+            <p>${source ? escapeHtml(source.source) : (!this.data ? (this.error ? "Daten nicht verfügbar" : "Quellen werden geladen…") : "Keine Quelle eingerichtet")}</p>
           </div>
           <div class="header-actions">
             <nav class="view-tabs" aria-label="Ansicht">
               <button id="view-devices" class="${this.view === "devices" ? "active" : ""}"><ha-icon icon="mdi:view-grid-outline"></ha-icon>Geräte</button>
               <button id="view-flow" class="${this.view === "flow" ? "active" : ""}"><ha-icon icon="mdi:transit-connection-variant"></ha-icon>Datenfluss</button>
             </nav>
-            <button class="primary" id="refresh">Aktualisieren</button>
+            <button class="primary" id="refresh" ${this.loading ? "disabled" : ""}>${this.loading ? "Aktualisiere…" : "Aktualisieren"}</button>
           </div>
         </header>
 
@@ -267,11 +307,12 @@ class LoRaWANIobrokerPanel extends HTMLElement {
           <button id="publish" ${!source || this.publishing ? "disabled" : ""}>${this.publishing ? "Sendet..." : "Jetzt senden"}</button>
         </section>
 
-        ${this.loading ? `<div class="notice">Lade Home-Assistant-Geräte...</div>` : ""}
-        ${!this.loading && !source ? `<div class="notice">Lege zuerst eine Quelle in den Integrationseinstellungen an.</div>` : ""}
-        ${!this.loading && source && !devices.length ? `<div class="notice">Keine passenden Geräte für diese Quelle oder das Label gefunden.</div>` : ""}
+        ${this.loading && !this.data ? `<div class="notice">Lade Home-Assistant-Geräte...</div>` : ""}
+        ${this.error ? `<div class="notice" role="alert">${escapeHtml(this.error)}</div>` : ""}
+        ${this.data && !source ? `<div class="notice">Lege zuerst eine Quelle in den Integrationseinstellungen an.</div>` : ""}
+        ${source && !devices.length ? `<div class="notice">Keine passenden Geräte für diese Quelle oder das Label gefunden.</div>` : ""}
 
-        ${source && !this.loading ? (this.view === "flow" ? this.renderDataFlow(source, devices) : `<div class="grid">${devices.map((device) => this.renderDevice(device)).join("")}</div>`) : ""}
+        ${source ? (this.view === "flow" ? this.renderDataFlow(source, devices) : `<div class="grid">${devices.map((device) => this.renderDevice(device)).join("")}</div>`) : ""}
       </main>`;
 
     this.bindEvents();

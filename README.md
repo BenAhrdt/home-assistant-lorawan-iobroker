@@ -57,7 +57,9 @@ After setup, **ioBroker LoRaWAN Bridge** appears in the Home Assistant sidebar. 
 
 Use the **Data Flow** view to see both bridge directions at a glance: devices imported from the configured ioBroker source through MQTT into Home Assistant, and labeled Home Assistant devices exported back through MQTT. Exported devices are grouped by their originating integration. Potential feedback loops are highlighted when an imported device also carries the configured export label.
 
-Only administrators should use bridge controls that can change devices. Access still follows the permissions and services available in the Home Assistant instance.
+The sidebar panel and its data, options, and publish APIs are restricted to Home Assistant administrators. MQTT light commands accept only supported light parameters and cannot change the authorized target.
+
+When returning from a device page, the panel immediately displays the last loaded data and preserves the source, search, integration filter, and selected view while refreshing in the background. This cache is held only in memory for the authenticated connection; a full browser reload starts a fresh load.
 
 ## Updating and removing
 

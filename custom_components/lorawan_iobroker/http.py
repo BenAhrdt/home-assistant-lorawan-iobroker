@@ -14,18 +14,6 @@ from .const import (
 )
 from .registry import integration_payload
 
-ALLOWED_SERVICES: dict[str, set[str]] = {
-    "button": {"press"},
-    "cover": {"open_cover", "close_cover", "stop_cover", "set_cover_position"},
-    "humidifier": {"turn_on", "turn_off", "set_humidity", "set_mode"},
-    "input_boolean": {"turn_on", "turn_off"},
-    "light": {"turn_on", "turn_off", "toggle"},
-    "lock": {"lock", "unlock", "open"},
-    "number": {"set_value"},
-    "select": {"select_option"},
-    "switch": {"turn_on", "turn_off", "toggle"},
-}
-
 
 class LoRaWANPanelJsView(HomeAssistantView):
     url = "/lorawan_iobroker/panel.js"
@@ -45,36 +33,9 @@ class LoRaWANDataView(HomeAssistantView):
     requires_auth = True
 
     async def get(self, request: web.Request) -> web.Response:
+        _require_admin(request)
         hass: HomeAssistant = request.app["hass"]
         return self.json(integration_payload(hass))
-
-
-class LoRaWANControlView(HomeAssistantView):
-    url = "/api/lorawan_iobroker/control"
-    name = "api:lorawan_iobroker:control"
-    requires_auth = True
-
-    async def post(self, request: web.Request) -> web.Response:
-        hass: HomeAssistant = request.app["hass"]
-        data: dict[str, Any] = await request.json()
-        entity_id = data.get("entity_id")
-        service = data.get("service")
-        service_data = data.get("service_data") or {}
-
-        if not isinstance(entity_id, str) or "." not in entity_id:
-            raise web.HTTPBadRequest(reason="entity_id is required")
-        domain = entity_id.split(".", 1)[0]
-
-        if service not in ALLOWED_SERVICES.get(domain, set()):
-            raise web.HTTPBadRequest(reason="service is not allowed for this domain")
-
-        await hass.services.async_call(
-            domain,
-            service,
-            {"entity_id": entity_id, **service_data},
-            blocking=False,
-        )
-        return self.json({"ok": True})
 
 
 class LoRaWANOptionsView(HomeAssistantView):
@@ -84,6 +45,7 @@ class LoRaWANOptionsView(HomeAssistantView):
 
     async def post(self, request: web.Request) -> web.Response:
         hass: HomeAssistant = request.app["hass"]
+        _require_admin(request)
         data: dict[str, Any] = await request.json()
         entry = _entry_from_request(hass, data)
         interval = data.get(CONF_PERIODIC_INTERVAL_MINUTES)
@@ -113,6 +75,7 @@ class LoRaWANPublishView(HomeAssistantView):
 
     async def post(self, request: web.Request) -> web.Response:
         hass: HomeAssistant = request.app["hass"]
+        _require_admin(request)
         data: dict[str, Any] = await request.json()
         entry = _entry_from_request(hass, data)
         await async_publish_periodic_message(hass, entry)
@@ -128,3 +91,9 @@ def _entry_from_request(hass: HomeAssistant, data: dict[str, Any]):
     if entry is None or entry.domain != DOMAIN:
         raise web.HTTPNotFound(reason="entry not found")
     return entry
+
+
+def _require_admin(request: web.Request) -> None:
+    user = request.get("hass_user")
+    if user is None or not user.is_admin:
+        raise web.HTTPForbidden(reason="Administrator access required")
