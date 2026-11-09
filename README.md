@@ -17,15 +17,15 @@ The integration reads devices and entities already discovered by Home Assistant'
 
 LoRaWAN sources must follow the `LoRaWAN.<number>` naming convention, for example `LoRaWAN.0` or `LoRaWAN.1`. The corresponding MQTT topic prefix is derived automatically; `LoRaWAN.1`, for example, maps to `lorawan_1/lorawan_1`.
 
-## Installation with HACS
+## Installation with HACS /Marketplace
 
 Until the integration is included in the default HACS catalogue, add it as a custom repository:
 
-1. Open HACS in Home Assistant.
-2. Open the menu and select **Custom repositories**.
-3. Enter `https://github.com/BenAhrdt/home-assistant-lorawan-iobroker`.
-4. Select **Integration** as the category and add the repository.
-5. Download **ioBroker LoRaWAN Bridge** and restart Home Assistant.
+1. HACS / Marketplace: search for "iobroker LoRaWAN Bridge", install, restart.
+ 
+<img width="444" height="55" alt="image" src="https://github.com/user-attachments/assets/c31828d9-0a0a-41d8-a78a-7f69d4b7c57a" />
+
+ 
 
 You can also use this shortcut after HACS has been installed:
 
